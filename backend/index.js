@@ -28,6 +28,8 @@ try {
     {message: error.message}
  ) 
 }
+
+
 const newBook = {
     title: request.body.title,
     author: request.body.author,
@@ -38,6 +40,64 @@ const newBook = {
  const book = await Book.create(newBook); 
 
  return response.status(201).send(book);
+})
+
+
+
+app.get('/books',async (request,response) => {
+    try {
+        const books = await Book.find({})
+        response.status(201).json({
+            count: books.length,
+            data: books,
+          });
+
+    } catch (error) {
+        console.log(error.message)
+        response.status(500).send(error.message)
+        
+    }
+})
+
+
+app.get('/books/:id',async (request,response) => {
+    try {
+
+        const { id } = request.params;
+        const book = await Book.findById(id)
+        response.status(201).json(book);
+
+    } catch (error) {
+        console.log(error.message)
+        response.status(500).send(error.message)
+        
+    }
+})
+
+
+app.put('/books/:id',async (request,response) => {
+    try {
+
+        if(!request.body.title ||
+            !request.body.author||
+            !request.body.publishYear){
+                response.status(400).send(
+                    {message: 'Send all required field: title, author ,publishYear'}
+                 )  
+            }
+
+        const { id } = request.params;
+        const result = await Book.findByIdAndUpdate(id,request.body)
+        if(!result){
+            return response.status(404).send({message:'Book not found'})
+        }
+        return response.status(200).send({message:'Books updated successfully '})
+
+    } catch (error) {
+        console.log(error.message)
+        response.status(500).send({message:error.message})
+        
+    }
 })
 
 mongoose
